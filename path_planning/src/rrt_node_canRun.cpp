@@ -26,8 +26,6 @@ using namespace rrt;
 bool status = running;
 vector< vector<geometry_msgs::Point> >  obstacleList;
 visualization_msgs::Marker start2endPoint_msg;
-visualization_msgs::Marker currentPath;
-bool alreadySetPath = false;
 
 void initializeMarkers(visualization_msgs::Marker &sourcePoint,
     visualization_msgs::Marker &goalPoint,
@@ -287,7 +285,6 @@ void RRT_path_planning(const visualization_msgs::Marker msg)
       }
       setFinalPathData(rrtPaths, myRRT, shortestPath, finalPath, goalX, goalY);
       rrt_publisher.publish(finalPath);
-      currentPath = finalPath;
     }
 
     rrt_publisher.publish(sourcePoint);
@@ -299,15 +296,16 @@ void RRT_path_planning(const visualization_msgs::Marker msg)
   }
 
   std::cout << "FinalPath length " << finalPath.points.size() << "\n";
-  // std::cout << "Final Path: \n" << finalPath<< "\n";
   // std::cout << "Finished Callback\n";
   //visualization_msgs::Marker finalPath = visualization_msgs::Marker();
   //resetMarkers(sourcePoint, goalPoint, randomPoint, rrtTreeMarker, finalPath);
+
 }
 
 void Callback_pp(const visualization_msgs::Marker msg)
 {
   start2endPoint_msg = msg;
+  // RRT_path_planning(msg);
 }
 
 void Callback_obst(const visualization_msgs::Marker msg)
@@ -317,32 +315,7 @@ void Callback_obst(const visualization_msgs::Marker msg)
 
   obstacles obst;
   obstacleList = obst.getObstacleArray(start_point);
-
-  if (alreadySetPath)
-  {
-    RRT::rrtNode tempNode;
-    // std::cout<<"Before the loop."<<endl;
-    std::cout << "Current path length: " << currentPath.points.size() << endl;
-    for(int i=0; i<currentPath.points.size(); i++)
-    {
-      // std::cout<<"Inside the loop."<<endl;
-      tempNode.posX = currentPath.points[i].x;
-      tempNode.posY = currentPath.points[i].y;
-      if (!checkIfOutsideObstacles(obstacleList, tempNode))
-      {
-        std::cout<<"Path conflicts with obstacle! Generating a new path..."<<endl;
-        RRT_path_planning(start2endPoint_msg);
-        break;
-      }
-    }
-    // std::cout<<"After the loop."<<endl;
-  }
-  else
-  {
-    RRT_path_planning(start2endPoint_msg);
-    alreadySetPath = true;
-  }
-
+  RRT_path_planning(start2endPoint_msg);
 }
 
 int main(int argc,char** argv)
@@ -353,6 +326,7 @@ int main(int argc,char** argv)
 
     //declaring Publisher
     ros::Publisher rrt_publisher = n.advertise<visualization_msgs::Marker>("path_planner_rrt",1);
+
 
     //initializePath(finalPath);
     visualization_msgs::Marker sourcePoint;
