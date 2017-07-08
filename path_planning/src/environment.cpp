@@ -13,6 +13,8 @@
 
 using namespace rrt;
 
+geometry_msgs::Point start_point;
+
 void initializeMarkers(visualization_msgs::Marker &boundary,
     visualization_msgs::Marker &obstacle)
 {
@@ -93,7 +95,7 @@ vector<geometry_msgs::Point> initializeObstacles()
 
     obstacles obst;
 
-    obstArray = obst.getObstacleArray();
+    obstArray = obst.getObstacleArray(start_point);
 
     for(int i=0; i<obstArray.size(); i++)
     {
@@ -107,38 +109,66 @@ vector<geometry_msgs::Point> initializeObstacles()
     return obstaclesMarker;
 }
 
-int main(int argc,char** argv)
+void Callback_obst(const visualization_msgs::Marker msg)
 {
-    //initializing ROS
-    ros::init(argc,argv,"env_node");
-	ros::NodeHandle n;
+    start_point = msg.points[0]; // msg.points[0] ???
+    std::cout << "Got obstacle's start_point: \n";
+    std::cout << msg.points[0] << endl;
 
-	//defining Publisher
-	ros::Publisher env_publisher = n.advertise<visualization_msgs::Marker>("path_planner_rrt",1);
+    ros::NodeHandle n;
 
-	//defining markers
+	  //defining Publisher
+	  ros::Publisher env_publisher = n.advertise<visualization_msgs::Marker>("path_planner_rrt",1);
+
+    //defining markers
     visualization_msgs::Marker boundary;
     visualization_msgs::Marker obstacle;
 
     initializeMarkers(boundary, obstacle);
 
-    //initializing rrtTree
-    RRT myRRT(2.0,2.0);
-    int goalX, goalY;
-    goalX = goalY = 95;
-
+    //publishing Boudary and Obstacles
     boundary.points = initializeBoundary();
     obstacle.points = initializeObstacles();
 
     env_publisher.publish(boundary);
     env_publisher.publish(obstacle);
+}
 
+int main(int argc,char** argv)
+{
+    //initializing ROS
+    ros::init(argc,argv,"env_node");
+	  ros::NodeHandle n;
+
+	  //defining Publisher
+	  ros::Publisher env_publisher = n.advertise<visualization_msgs::Marker>("path_planner_rrt",1);
+
+	  //defining markers
+    visualization_msgs::Marker boundary;
+    visualization_msgs::Marker obstacle;
+
+    initializeMarkers(boundary, obstacle);
+
+    ros::Subscriber sub_obst = n.subscribe("pp_obstacle", 10, Callback_obst);
+
+    //initializing rrtTree
+    // RRT myRRT(2.0,2.0);
+    // int goalX, goalY;
+    // goalX = goalY = 95;
+
+    // boundary.points = initializeBoundary();
+    // obstacle.points = initializeObstacles();
+    //
+    // env_publisher.publish(boundary);
+    // env_publisher.publish(obstacle);
+    //
     while(ros::ok())
     {
-        env_publisher.publish(boundary);
-        env_publisher.publish(obstacle);
-        ros::spinOnce();
-        ros::Duration(1).sleep();
+      ros::spin();
+        // env_publisher.publish(boundary);
+        // env_publisher.publish(obstacle);
+        // ros::spinOnce();
+        // ros::Duration(1).sleep();
     }
 	return 1;
 }

@@ -14,7 +14,7 @@ class obstacles
         /** Default destructor */
         virtual ~obstacles() {}
 
-        vector< vector<geometry_msgs::Point> > getObstacleArray();
+        vector< vector<geometry_msgs::Point> > getObstacleArray(geometry_msgs::Point start_point);
 
     protected:
     private:
