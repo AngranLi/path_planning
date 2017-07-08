@@ -16,8 +16,6 @@
 #include <string>
 #include <fstream>
 
-visualization_msgs::Marker uav_move;
-
 using namespace std;
 
 #define success false
@@ -26,8 +24,8 @@ using namespace std;
 using namespace rrt;
 
 bool status = running;
-
 vector< vector<geometry_msgs::Point> >  obstacleList;
+visualization_msgs::Marker start2endPoint_msg;
 
 void initializeMarkers(visualization_msgs::Marker &sourcePoint,
     visualization_msgs::Marker &goalPoint,
@@ -192,10 +190,8 @@ void setFinalPathData(vector< vector<int> > &rrtPaths, RRT &myRRT, int i, visual
     finalpath.points.push_back(point);
 }
 
-
-void Callback_pp(const visualization_msgs::Marker msg)
+void RRT_path_planning(const visualization_msgs::Marker msg)
 {
-
   visualization_msgs::Marker sourcePoint;
   visualization_msgs::Marker goalPoint;
   visualization_msgs::Marker randomPoint;
@@ -219,33 +215,13 @@ void Callback_pp(const visualization_msgs::Marker msg)
   ROS_INFO("UAV_Goal : ");
   //ROS_INFO(v);
   std::cout << msg.points[1] << "\n";
-  //ROS_INFO("UAV_id : [%s]", msg.text->uav_move.text);
-  //ROS_INFO("UAV_Start : [%s]", msg.points[0]->uav_move.points[0]);
-  //ROS_INFO("UAV_Goal : [%s]", msg.points[1]->uav_move.points[1]);
-
-  // uav_move.text = msg.text;
-  // uav_move.points[0].x = msg.points[0].x;
-  // uav_move.points[0].y = msg.points[0].y;
-  // uav_move.points[0].z = msg.points[0].z;
-
-  // uav_move.points[1].x = msg.points[1].x;
-  // uav_move.points[1].y = msg.points[1].y;
-  // uav_move.points[1].z = msg.points[1].z;
 
   //setting source and goal points
-  sourcePoint.pose.position.x = msg.points[0].x; // uav_move.points[0].x;
-  sourcePoint.pose.position.y = msg.points[0].y; // uav_move.points[0].y;
+  sourcePoint.pose.position.x = msg.points[0].x;
+  sourcePoint.pose.position.y = msg.points[0].y;
 
-  goalPoint.pose.position.x = msg.points[1].x; // uav_move.points[1].x;
-  goalPoint.pose.position.y = msg.points[1].y; // uav_move.points[1].y;
-
-  //    rospy.wait_for_message('move_base_simple/goal', PoseStamped);
-  //    rospy.Subscriber('move_base_simple/goal', PoseStamped, self.update_goal);
-
-
-  //    goalPoint.pose.position.x = goal.pose.position.x;
-  //    goalPoint.pose.position.y = move_base_simple/goal.y;
-  //    goalPoint.pose.position.y = goal.pose.position.y;
+  goalPoint.pose.position.x = msg.points[1].x;
+  goalPoint.pose.position.y = msg.points[1].y;
 
   rrt_publisher.publish(sourcePoint);
   rrt_publisher.publish(goalPoint);
@@ -308,12 +284,7 @@ void Callback_pp(const visualization_msgs::Marker msg)
         }
       }
       setFinalPathData(rrtPaths, myRRT, shortestPath, finalPath, goalX, goalY);
-
-      std::cout << "About to publish final path data\n";
-
       rrt_publisher.publish(finalPath);
-
-      std::cout << "After publishing final path data\n";
     }
 
     rrt_publisher.publish(sourcePoint);
@@ -328,15 +299,23 @@ void Callback_pp(const visualization_msgs::Marker msg)
   // std::cout << "Finished Callback\n";
   //visualization_msgs::Marker finalPath = visualization_msgs::Marker();
   //resetMarkers(sourcePoint, goalPoint, randomPoint, rrtTreeMarker, finalPath);
+
+}
+
+void Callback_pp(const visualization_msgs::Marker msg)
+{
+  start2endPoint_msg = msg;
+  // RRT_path_planning(msg);
 }
 
 void Callback_obst(const visualization_msgs::Marker msg)
 {
   geometry_msgs::Point start_point;
-  start_point = msg.points[0]; 
+  start_point = msg.points[0];
 
   obstacles obst;
   obstacleList = obst.getObstacleArray(start_point);
+  RRT_path_planning(start2endPoint_msg);
 }
 
 int main(int argc,char** argv)
