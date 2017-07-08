@@ -333,7 +333,7 @@ void Callback_pp(const visualization_msgs::Marker msg)
 void Callback_obst(const visualization_msgs::Marker msg)
 {
   geometry_msgs::Point start_point;
-  start_point = msg.points[0]; // msg.points[0] ???
+  start_point = msg.points[0]; 
 
   obstacles obst;
   obstacleList = obst.getObstacleArray(start_point);
