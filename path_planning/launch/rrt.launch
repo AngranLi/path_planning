@@ -1,0 +1,13 @@
+<launch>
+
+  <node name="pp_pub" pkg="path_planning" type="pp_pub.py" output="screen"/>
+
+  <node name="obst_pub" pkg="path_planning" type="obst_pub.py" output="screen"/>
+
+  <node name="env_node" pkg="path_planning" type="env_node" output="screen"/>
+
+  <node name="rviz" pkg="rviz" type="rviz" args="/home/lar/catkin_ws/src/RRT/path_planning/path_planning/RRT.rviz" required="true" />
+
+  <!-- <node name="rrt_node" pkg="path_planning" type="rrt_node" output="screen"/> -->
+
+</launch>
