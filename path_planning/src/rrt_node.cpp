@@ -209,13 +209,10 @@ void RRT_path_planning(const visualization_msgs::Marker msg)
   ros::Publisher rrt_publisher = n.advertise<visualization_msgs::Marker>("path_planner_rrt",1);
 
   ROS_INFO("UAV_id : ");
-  //ROS_INFO(v);
   std::cout << msg.text << "\n";
   ROS_INFO("UAV_Start : ");
-  //ROS_INFO(v);
   std::cout << msg.points[0] << "\n";
   ROS_INFO("UAV_Goal : ");
-  //ROS_INFO(v);
   std::cout << msg.points[1] << "\n";
 
   //setting source and goal points
@@ -236,7 +233,7 @@ void RRT_path_planning(const visualization_msgs::Marker msg)
   goalX =  goalPoint.pose.position.x;
   goalY =  goalPoint.pose.position.y;
 
-  int rrtStepSize = 3;
+  int rrtStepSize = 1;
 
   vector< vector<int> > rrtPaths;
   vector<int> path;
@@ -286,13 +283,14 @@ void RRT_path_planning(const visualization_msgs::Marker msg)
         }
       }
       setFinalPathData(rrtPaths, myRRT, shortestPath, finalPath, goalX, goalY);
+      finalPath.text = msg.text;
       rrt_publisher.publish(finalPath);
       currentPath = finalPath;
     }
 
     rrt_publisher.publish(sourcePoint);
     rrt_publisher.publish(goalPoint);
-    rrt_publisher.publish(rrtTreeMarker);
+    // rrt_publisher.publish(rrtTreeMarker);
     // rrt_publisher.publish(finalPath);
     ros::spinOnce();
     ros::Duration(0.01).sleep();
@@ -347,6 +345,17 @@ void Callback_obst(const visualization_msgs::Marker msg)
 
 int main(int argc,char** argv)
 {
+    geometry_msgs::Point tempStart;
+    geometry_msgs::Point tempEnd;
+    tempStart.x = 1;
+    tempStart.y = 1;
+    tempStart.z = 1;
+    tempEnd.x = 10;
+    tempEnd.y = 10;
+    tempEnd.z = 1;
+    start2endPoint_msg.points.push_back(tempStart);
+    start2endPoint_msg.points.push_back(tempEnd);
+
     //initializing ROS
     ros::init(argc,argv,"rrt_node");
     ros::NodeHandle n;
